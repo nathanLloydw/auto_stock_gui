@@ -1,0 +1,34 @@
+/* warehouse driver sheet page */
+.daily_locations
+{
+    background-color: #222A37;
+    border: none;    
+    color: white;
+    height: 50px;
+    font-size: 14px;
+    float: left;
+}
+
+.daily_locations:hover
+{
+    background-color: #3E74CE;
+}
+
+.fa-arrow-up
+{
+    color:gray;
+}
+
+.fa-arrow-up:hover
+{
+    color:white;
+}
+.fa-arrow-down
+{
+    color:gray;
+}
+
+.fa-arrow-down:hover
+{
+    color:white;
+}

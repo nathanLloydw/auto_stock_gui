@@ -1,0 +1,7 @@
+/* this code styles the section/page which is used to upload orchard orders into sage. */ 
+#fileUpload
+{
+    margin-top: 60px;
+    margin-left: 10px;
+    color: white;
+}

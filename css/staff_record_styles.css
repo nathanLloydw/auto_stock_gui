@@ -1,0 +1,30 @@
+/* staff reports page styles */
+.clickable
+{
+    background-color: #222A37;
+    border: none;
+    color: white;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-right: 6.85%;
+    padding-left: 6.85%;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 0px;
+    margin-right: 5px;
+    float:right;
+}
+
+.clickable a
+{
+    color: white;
+    text-decoration: none;
+}
+
+.clickable:hover
+{
+    background-color: #3E74CE;
+}
