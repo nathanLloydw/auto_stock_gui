@@ -90,9 +90,10 @@ class db_conn
         }
     }
 
-    function get_runs($sql,$routes)
+    function get_runs($sql,$routes,$date)
     {
-        $todays_destinations = array_keys($routes[date("l")]);
+        $day = date("l",strtotime($date));
+        $todays_destinations = array_keys($routes[$day]);
         array_push($todays_destinations,'unknown');
 
         foreach($todays_destinations as $destination)
@@ -100,7 +101,7 @@ class db_conn
             $Runs[$destination] =  array();
         }
 
-        $keys = $routes[date("l")];
+        $keys = $routes[$day];
 
         $orders_out = $this->get($sql);
 
@@ -128,6 +129,7 @@ class db_conn
                     }
                 }
             }
+
             $order = array($customer_id,$order_reference,$customer_name,$address,$town_city,$post_code,$order_weight,$destination);
 
             $orders = $Runs[$destination];
@@ -138,14 +140,14 @@ class db_conn
 
     }
 
-    function post_runs($routes)
+    function post_runs($routes,$date)
     {
-        $sql = "SELECT c.customer_id,order_reference,c.company_name,c.address,c.town_city,c.post_code,round(order_weight,2) AS order_weight FROM
+        $sql = "SELECT c.customer_id,GROUP_CONCAT(order_reference) AS order_reference,c.company_name,c.address,c.town_city,c.post_code,round(sum(order_weight),2) AS order_weight FROM
         (
            SELECT order_reference,customer_id,delivery_date,t.product_id,sum(weight) AS order_weight FROM
            (
                SELECT order_reference,customer_id,delivery_date,product_id FROM 
-               transactions WHERE delivery_date=CURRENT_DATE()
+               transactions WHERE delivery_date='".$date."' AND customer_id != 'ORCHARD'
            )
            AS T
            INNER JOIN products AS P ON p.product_id=t.product_id
@@ -153,58 +155,70 @@ class db_conn
         ) 
         AS o
         INNER JOIN customers AS c ON c.customer_id=o.customer_id
+        GROUP BY customer_id
         ORDER BY post_code desc";
 
-        $Runs = $this->get_runs($sql,$routes);
-
+        $Runs = $this->get_runs($sql,$routes,$date);
+        $run_num = 1;
+        $are_runs = false;
+        
         foreach($Runs as $run)
         {
             $count = 1;
-            echo "<br><br>";
             foreach($run as $order)
             {
-                echo "<br>";
-                print_r($order);
-                echo "<br>";
+
                 $location = $order[7];
                 if($location != 'unknown')
                 {
+                    $are_runs = true;
                     $customer_id =$order[0];
                     $invoice = $order[1];
                     $weight = $order[6];
-                    $sql = "INSERT INTO delivery_runs (DATE,location,location_run_number,row_number,customer_id,order_reference,order_weight) 
-                    VALUES (CURRENT_DATE(),'".$location."',1,".$count.",'".$customer_id."',".$invoice.",".$weight.")";
+                    $sql = "INSERT INTO delivery_runs (run_number,DATE,location,location_run_number,row_number,customer_id,order_reference,order_weight) 
+                    VALUES (".$run_num.",'".$date."','".$location."',1,".$count.",'".$customer_id."','".$invoice."',".$weight.")";
                     $count = $count + 1;
-                    #$this->post($sql);
+                    $this->post($sql);
                 } 
             }
+            $run_num = $run_num+1;
         }
+        return $are_runs;
     }
 
-    function update_runs($routes)
+    function update_runs($routes,$date)
     {
-        $sql = "SELECT C.customer_id,order_reference,C.company_name,address,town_city,post_code,round(sum(P.weight),2) AS weight FROM
+        $sql = "SELECT * FROM
         (
-           SELECT T.order_reference,T.customer_id,T.delivery_date,T.product_id FROM
+        SELECT customer_id,GROUP_CONCAT(order_reference) AS order_reference,company_name,address,town_city,post_code,round(sum(weight),2) AS weight FROM
+        (
+           SELECT C.customer_id,order_reference,C.company_name,address,town_city,post_code,round(sum(P.weight),2) AS weight FROM
            (
-               SELECT order_reference,customer_id,delivery_date,product_id FROM  
-               transactions WHERE delivery_date = CURRENT_DATE()
+             SELECT T.order_reference,T.customer_id,T.delivery_date,T.product_id FROM
+             (
+                 SELECT order_reference,customer_id,delivery_date,product_id FROM  
+                 transactions WHERE delivery_date = '".$date."' AND customer_id != 'ORCHARD'
+             ) 
+             AS T
+             LEFT JOIN
+             (
+                 SELECT * FROM delivery_runs WHERE DATE=CURRENT_DATE()
+             )
+             AS R
+             ON R.order_reference=T.order_reference
            ) 
-           AS T
-           LEFT JOIN
-           (
-               SELECT * FROM delivery_runs WHERE DATE=CURRENT_DATE()
-           )
-           AS R
-           ON R.order_reference=T.order_reference
-           WHERE R.order_reference IS NULL
-        ) 
-        AS O
-        INNER JOIN products AS P ON O.product_id=P.product_id
-        INNER JOIN customers AS C ON O.customer_id=C.customer_id
-        GROUP BY order_reference";
+           AS O
+           INNER JOIN products AS P ON O.product_id=P.product_id
+           INNER JOIN customers AS C ON O.customer_id=C.customer_id
+           GROUP BY order_reference
+        )
+        AS f
+        GROUP BY customer_id
+        )
+        AS f
+        WHERE order_reference NOT IN (SELECT order_reference FROM delivery_runs WHERE DATE='".$date."')";
 
-        $Runs = $this->get_runs($sql,$routes);
+        $Runs = $this->get_runs($sql,$routes,$date);
 
         $unknown = array();
 
@@ -219,10 +233,15 @@ class db_conn
                     $customer_id =$order[0];
                     $invoice = $order[1];
                     $weight = $order[6];
-                    $sql = "SELECT MAX(row_number) FROM delivery_runs WHERE location='".$location."' AND DATE=CURRENT_DATE()";
+
+                    $sql = "SELECT MAX(row_number) FROM delivery_runs WHERE location='".$location."' AND DATE='".$date."'";
                     $row_number = $this->get($sql)[0][0]+1;
-                    $sql = "INSERT INTO delivery_runs (DATE,location,location_run_number,row_number,customer_id,order_reference,order_weight) 
-                    VALUES (CURRENT_DATE(),'".$location."',1,".$row_number.",'".$customer_id."',".$invoice.",".$weight.")";
+
+                    $sql = "SELECT Max(run_number) FROM delivery_runs WHERE location='".$location."' AND DATE='".$date."'";
+                    $run_number = $this->get($sql)[0][0];
+
+                    $sql = "INSERT INTO delivery_runs (run_number,DATE,location,location_run_number,row_number,customer_id,order_reference,order_weight) 
+                    VALUES (".$run_number.",'".$date."','".$location."',1,".$row_number.",'".$customer_id."','".$invoice."',".$weight.")";
                     $this->post($sql);
                 }
                 else

@@ -194,6 +194,59 @@ $test_PO_payload = "<?xml version='1.0'?>
 </sdata:payload>
 </entry>";
 
+$test_2_po ="<?xml version='1.0'?>
+<entry xmlns='http://www.w3.org/2005/Atom'
+    xmlns:sdata='http://schemas.sage.com/sdata/2008/1' 
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+    xmlns:sc='http://schemas.sage.com/sc/2009' 
+    xmlns:crm='http://schemas.sage.com/crmErp/2008'>
+    <sdata:payload>
+    <crm:purchaseOrder>
+    <crm:active>true</crm:active>
+    <crm:reference2 />
+    <crm:status />
+    <crm:tradingAccount sdata:uuid='ab598355-9064-45bd-839a-cab3b5eb8c2b'>
+        <crm:name>test</crm:name>
+    </crm:tradingAccount>
+    <crm:statusFlagText></crm:statusFlagText>
+    <crm:supplierReference />
+    <crm:copyFlag>false</crm:copyFlag>
+    <crm:carrierNetPrice>0.00</crm:carrierNetPrice>
+    <crm:carrierTaxPrice>0.00</crm:carrierTaxPrice>
+    <crm:carrierTotalPrice>0.00</crm:carrierTotalPrice>
+    <crm:carrierReference>1</crm:carrierReference>
+    <crm:currency>GBP</crm:currency>
+    <crm:operatingCompanyCurrency>GBP</crm:operatingCompanyCurrency>
+    <crm:operatingCompanyCurrencyExchangeRate>1.00</crm:operatingCompanyCurrencyExchangeRate>
+    <crm:operatingCompanyCurrencyExchangeRateOperator>/</crm:operatingCompanyCurrencyExchangeRateOperator>
+    <crm:date>2020-05-20</crm:date>
+    <crm:user>Nathan</crm:user>
+    <crm:purchaseOrderLines>
+        <crm:purchaseOrderLine>
+        <crm:active>true</crm:active>
+        <crm:number>1</crm:number>
+        <crm:commodity sdata:uuid='b014406d-2e3d-4a42-b905-d946a18080b8'/>
+        <crm:quantity>118</crm:quantity>
+        <crm:initialPrice>140.42</crm:initialPrice> 
+        <crm:actualPrice>1.19</crm:actualPrice>
+        <crm:netTotal>140.42</crm:netTotal>
+        <crm:discountTotal>0.00</crm:discountTotal>
+        <crm:taxTotal>0.00</crm:taxTotal>
+        <crm:grossTotal>140.42</crm:grossTotal>
+        </crm:purchaseOrderLine>
+    </crm:purchaseOrderLines>
+    <crm:lineCount>1.00</crm:lineCount>
+    <crm:text1 />
+    <crm:text2 />
+    <crm:netTotal>14062.50</crm:netTotal>
+    <crm:taxTotal>0.00</crm:taxTotal>
+    <crm:grossTotal>14062.50</crm:grossTotal>
+    <crm:SupplierId>SUR001</crm:SupplierId>
+    <crm:onOrder />
+    </crm:purchaseOrder>
+</sdata:payload>
+</entry>";
+
 function build_purchase_order_payload($product,$supplier,$quantity,$price)
 {
     $total_cost = $price*$quantity;

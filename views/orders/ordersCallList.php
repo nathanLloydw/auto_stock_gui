@@ -9,7 +9,7 @@ include '../../data/Delivery_routes.php';
 $sql = "SELECT customer_id,company_name,last_order_ref,last_order_date,address,town_city,post_code,STATUS,notes,DATEDIFF(NOW(),last_order_date) AS days_since_order,opening_hour 
 FROM customers
 WHERE left(customer_id,2)!='ZZ'
-ORDER BY STATUS DESC,days_since_order,post_code";
+ORDER BY STATUS DESC,days_since_order asc,post_code";
 
 $day = date("w");
 

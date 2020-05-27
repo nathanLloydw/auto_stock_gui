@@ -32,3 +32,11 @@
 {
     color:white;
 }
+.fa-check-circle:hover
+{
+    color:green;
+}
+.fa-times-circle:hover
+{
+    color: red;
+}

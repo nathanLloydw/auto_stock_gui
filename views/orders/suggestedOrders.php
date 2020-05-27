@@ -5,15 +5,18 @@ include '../../controller/serverConnection.php';
 include '../../navBar.php';
 
 #sql query used to retrive the infomation used to fill the page.
-$sql = "SELECT P.product_id,PS.supplier_id,round(stock) AS stock,lead_time,round(daily_useage*lead_time) AS lead_time_useage,round(stock - daily_useage*lead_time,2) AS predicted_stock,ROUND((stock/daily_useage)- lead_time) AS days_till_zero,S.uuid AS sup,P.uuid AS prod,PS.cost_price FROM products AS P
-        INNER JOIN
-        (
-        SELECT product_id,round(SUM(quantity)/21,2) AS daily_useage FROM transactions WHERE delivery_date > ADDDATE(NOW(), -21) AND quantity > 0 GROUP BY product_id
-        ) 
-        AS T ON T.product_id=P.product_id
-        INNER JOIN product_supply AS PS ON PS.product_id=P.product_id
-        INNER JOIN suppliers AS S ON S.supplier_id=PS.supplier_id
-        where stock > 0";
+$sql = "SELECT P.product_id,S.supplier_id,round(stock),lead_time,tot_quantity AS Useage,round(stock-tot_quantity) AS future_stock,round(stock / (tot_quantity / lead_time) - lead_time) AS days_till_order,S.uuid AS s_uuid,P.uuid AS p_uuid,cost_price FROM
+(
+	SELECT PS.supplier_id,PS.product_id,PS.lead_time,sum(quantity) AS tot_quantity,date FROM product_supply AS PS 
+	INNER JOIN
+	(
+	    SELECT product_id,SUM(quantity) AS quantity,delivery_date AS date FROM transactions WHERE quantity > 0 GROUP BY day(delivery_date),product_id 
+	) 
+	AS T ON PS.product_id=T.product_id AND DATE > ADDDATE(NOW(), - lead_time)
+	GROUP BY supplier_id,product_id,lead_time
+) AS T
+INNER JOIN products AS P ON P.product_id=T.product_id
+INNER JOIN suppliers AS S ON S.supplier_id=T.supplier_id";
 
 # we pass this sql query to the server connection to get our infomation
 $suggested_orders = $db_conn->get($sql);
@@ -60,7 +63,6 @@ foreach($suggested_orders as $suggested_order)
             <td> <input id='".$supplier_uuid."-".$product_uuid."' type='text' name='fname' style='width:35px;height:19px;'></td> 
             <td> <i class='fas fa-check-square' id='order-".$supplier_uuid."-".$product_uuid."' style='font-size:22px;' onclick=post_order(event,'".$product_uuid."','".$supplier_uuid."','".$cost_price."')> </i></td> 
           </tr>";
-
 }
 
 echo "</table></div></body>";

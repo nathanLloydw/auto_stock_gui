@@ -277,8 +277,6 @@ function changeTab(evt,location)
     {
         location_runs[x].style.display = "table";
     }
-
-    console.log(active_table);
 }
 
 function changeCallListTab(evt,location)
@@ -299,9 +297,17 @@ function create_table()
 {
     new_table = active_table;
     run_num = run_num + 1;
-    console.log(new_table);
     rowCount = 1;
     table_count = document.getElementById('table '+new_table);
+    var d = new Date();
+    day = d.getDate();
+    month = d.getMonth()+1;
+    year = d.getFullYear();
+    
+    if (day < 10){day = '0'+day;}
+    if (month < 10){month = '0'+month;}
+
+    date = year+'-'+month+'-'+day;
 
     table =
     `<table class='`+new_table+`' id='`+new_table+` `+run_num+`' class='tabcontent' style=display:table;margin-top:5px;'>
@@ -310,68 +316,207 @@ function create_table()
                 <th> run `+run_num+`</th>
                 <th>customer ID</th> 
                 <th>Order Reference</th> 
-                <th>Name</th> 
                 <th>Address</th> 
                 <th>town/city</th> 
                 <th>postCode</th>
-                <th>weight</th>
+                <th><button id='weight `+new_table+` `+run_num+`' onclick='updateWeight(`+`"`+new_table+'"'+","+run_num+`)'>0.0KG</button></th>
+                <th><button onclick='printRun(`+`"`+new_table+'"'+","+run_num+`)'>Print Run</button></th>
             </tr>
-            <tr id='`+new_table+` `+run_num+` `+rowCount+`' > 
-                <td onClick='copyRow(event,"`+new_table+`",`+run_num+`,1)'>
-                    <i class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
+            <tr id='`+new_table+` `+run_num+` 100' > 
+                <td>
+                    <i onClick='deleteRow(event,"`+new_table+`",`+run_num+`,100)' class='fas fa-times-circle' style='font-size:18px;padding-left:12px;'> </i>
                 </td> 
                 <td></td> 
                 <td></td> 
                 <td></td> 
                 <td></td> 
-                <td></td> 
                 <td></td>
                 <td></td>
+                <td>
+                    <i onClick='copyRow(event,"`+new_table+`",`+run_num+`,100,"`+date+`")' class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
+                </td>
             </tr>
         </tbody>`;
     tableLocation = document.getElementById('warehouse_body').insertAdjacentHTML('beforeend',table);
 }
 
-function copyRow(event,table,run,row)
+function deleteRow(event,table,run_num,row)
 {
-    console.log(table);
-    console.log(row);
-    console.log(run);
+    console.log(table,run_num,row);
+    tr = document.getElementById(table+" "+run_num+" "+row);
+    console.log(tr);
+
+    if(tr.parentNode.rows.length < 3)
+    {
+        tr.parentNode.parentNode.innerHTML = '';
+
+    }
+    else
+    {
+        tr.parentNode.parentNode.deleteRow(tr.parentNode.rows.length-1);
+    }
+}
+
+function copyRow(event,table,run,row,date)
+{
     if(copied_row != '')
     {
-       console.log(copied_row.id); 
        if (copied_row.id == table+" "+run+" "+row)
        {
             tr = document.getElementById(table+" "+run+" "+row);
-            tr.cells[0].innerHTML = `<td onClick='copyRow(event,`+'"'+table+'","'+row+'"'+`)'>
-                                        <i class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
+            tr.cells[7].innerHTML = `<td>
+                                        <i onClick='copyRow(event,`+'"'+table+'",'+run+","+row+',"'+date+'"'+`)' class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
                                     </td>`;
             copied_row='';
        }
        else
        {
+            table_rows = document.getElementById(table+" "+run).rows.length;
             tr = document.getElementById(table+" "+run+" "+row);
-            copied_row.cells[0].innerHTML = `<td onClick='copyRow(event,`+'"'+table+'","'+row+'"'+`)'>
-                                                <i class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
-                                             </td>`;
-            table = document.getElementById(table+" "+run+" "+row).parentNode.insertBefore(copied_row,tr);
-            copied_row='';
 
-            //recalculate run weights. 
+            id = copied_row.id;
+            id = id.split(" ");
+
+            new_table = id[0];
+            new_run = id[1];
+            new_row = id[2];
+
+            console.log(copied_row.parentNode);
+            console.log("rows : "+copied_row.parentNode.rows.length);
+            row_count = copied_row.parentNode.rows.length;
+
+            copied_row.cells[7].innerHTML = `<td>
+                                                 <i onClick='copyRow(event,`+'"'+new_table+'",'+run+","+new_row+',"'+date+'"'+`)' class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
+                                             </td>`; 
+
+            copied_row.cells[0].innerHTML = `<td>
+                <input type='text' id='input-`+new_table+"-"+run+"-"+new_row+"' name='fname' value='"+new_row+`' style='width:25px;height:19px;'>
+                <i onClick='moveRow(event,`+'"'+new_table+'"'+", "+run+", "+new_row+","+'"'+date+'"'+`)' class='fas fa-check-circle' style='font-size:18px;padding-left:12px;'> </i>
+            </td>`; 
+
+            
+            if(row_count < 3)
+            {
+                copied_row.parentNode.parentNode.innerHTML = '';
+            }
+
+            table = document.getElementById(table+" "+run+" "+row).parentNode.insertBefore(copied_row,tr); 
+
+            copied_row.id = new_table+' '+run+' '+new_row;
+            copied_row='';
+            moveRow(event,new_table,run,new_row,date);
        }
     }
     else
     {
         tr = document.getElementById(table+" "+run+" "+row);
-        copied_row = tr;
 
-        tr.cells[0].innerHTML = `<td onClick='copyRow(event,`+'"'+table+'","'+row+'"'+`)'>
-                                    <i class='fas fa-paste' style='font-size:18px;padding-left:12px;'> </i>
+        copied_row = tr;
+        tr.cells[7].innerHTML = `<td>
+                                    <i onClick='copyRow(event,`+'"'+table+'",'+run+","+row+',"'+date+'"'+`)' class='fas fa-paste' style='font-size:18px;padding-left:12px;'> </i>
                                  </td>`;
 
      
     }
 }
+
+function moveRow(event,location,run_num,row_num,date)
+{
+    input = document.getElementById('input-'+location+'-'+run_num+'-'+row_num).value;
+
+    current_row = document.getElementById(location+" "+run_num+" "+row_num);
+    next_row = document.getElementById(location+" "+run_num+" "+input);
+    next_row.parentNode.insertBefore(current_row,next_row);
+
+    table = current_row.parentNode;
+    size = table.rows.length;
+
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function()
+    {
+        if (this.readyState == 4 && this.status == 200) 
+        {
+            result = this.responseText; 
+        }
+    };
+
+    for(var i = 1; i < size-1;i++)
+    {
+        if(table.rows[i]!= undefined && table.rows[i].cells[0] != undefined && table.rows[i].id != location+' '+run_num+' 100')
+        {
+            customer_id = table.rows[i].cells[1].innerText;
+            xmlhttp.open("GET","update_runs.php?customer="+customer_id+"&location="+location+"&run_num="+run_num+"&row="+i+"&date="+date,true);
+            xmlhttp.send();
+
+            table.rows[i].id = location+' '+run_num+' '+i;
+        
+            if(customer_id != '')
+            {
+                table.rows[i].cells[0].innerHTML = `<td>
+                                <input type='text' id='input-`+location+"-"+run_num+"-"+i+"' name='fname' value='"+i+`' style='width:25px;height:19px;'>
+                                <i onClick='moveRow(event,`+'"'+location+'"'+", "+run_num+", "+i+',"'+date+`")' class='fas fa-check-circle' style='font-size:18px;padding-left:12px;'> </i>
+                            </td> `;
+                table.rows[i].cells[7].innerHTML = `<td>
+                                                    <i onClick='copyRow(event,`+'"'+location+'",'+run_num+","+i+',"'+date+'"'+`)' class='fas fa-copy' style='font-size:18px;padding-left:12px;'> </i>
+                                                    </td>`;
+            }
+        }
+            
+    }
+}
+
+function updateWeight(location,location_run_num)
+{
+    table = document.getElementById(location+" "+location_run_num);
+    button = document.getElementById('weight '+location+" "+location_run_num);
+
+    weight = 0.0;
+    size = table.rows.length;
+
+    for(i = 1; i < size;i++)
+    {
+        weight = weight + Number(table.rows[i].cells[6].innerHTML);
+    }
+
+    button.innerText = weight.toFixed(2)+'KG';
+}
+
+function printRun(location,location_run_num)
+{
+    table = document.getElementById(location+" "+location_run_num).innerHTML;
+    nav = document.getElementsByClassName('nav');
+
+    console.log(table);
+    page = document.body.innerHTML;
+    document.body.innerHTML=`<style type="text/css" media="print"> 
+    @media print 
+    {
+    
+        @page 
+        {
+            size: A4 landscape;max-height:100%; max-width:100%
+        }
+    
+        img 
+        { 
+            height: 90%; margin: 0; padding: 0; 
+        }
+    
+    body
+    {
+        width:100%;
+        height:100%;
+    }  
+    
+    
+    </style><table style='margin-top:55px;font-size:10px;'>`+table+'</table>';
+
+    print();
+
+    document.body.innerHTML=page;
+
+}
+
 
 function post_order(event,product,supplier,price)
 {
@@ -380,11 +525,8 @@ function post_order(event,product,supplier,price)
 
     if(quantity != '')
     {
-        console.log('has value');
         confirmation_box.style.color='green';
-
         xmlhttp = new XMLHttpRequest();
-
         xmlhttp.onreadystatechange = function()
         {
             if (this.readyState == 4 && this.status == 200) 

@@ -1,17 +1,11 @@
 <?php
 
-#include '../data/sdata_payloads.php';
-
-$auth_user = 'bot02';
-$auth_pass = 'bot2';
-$base_url = "http://192.168.1.94:5495/sdata/accounts50/gcrm/{E07F67FB-A27A-49AB-BBBB-1EDEBA388DB5}-1/";
-#$base_url = "http://192.168.1.200:5495/sdata/accounts50/gcrm/-/";
-
+$auth_user = 'helen';
+$auth_pass = 'helen';
+$base_url = "http://192.168.1.200:5495/sdata/accounts50/gcrm/{E07F67FB-A27A-49AB-BBBB-1EDEBA388DB5}-1/";
 
 $sdata_conn = new sdata_connection($base_url,$auth_user,$auth_pass);
 
-#$post_return = $sdata_conn->post_purchase_order_test($test_PO_payload);
-#echo $post_return;
 
 class sdata_connection
 {
@@ -40,7 +34,7 @@ class sdata_connection
             CURLOPT_CUSTOMREQUEST => "GET",
             CURLOPT_HTTPHEADER => array(
                 "Content-Type: application/xml",
-                "Authorization: Basic bmF0aGFuOm5hdGhhbg=="
+                "Authorization: Basic aGVsZW46aGVsZW4="
             ),
         ));
         $response = curl_exec($curl);
@@ -63,7 +57,7 @@ class sdata_connection
             CURLOPT_POSTFIELDS =>$Payloud,
             CURLOPT_HTTPHEADER => array(
                 "Content-Type: application/atom+xml; type=entry",
-                "Authorization: Basic bmF0aGFuOm5hdGhhbg=="    
+                "Authorization: Basic aGVsZW46aGVsZW4="    
             ),
         ));
         $response = curl_exec($curl);

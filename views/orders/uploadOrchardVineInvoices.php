@@ -75,13 +75,13 @@ if(isset($_FILES['order']))
                     $taxAmount = 0;
                     $taxRate = 0;
 
-                    //if($totalPrice >= 100)
-                    //{
-                    //    $data = array($acountRef,$shippingAddress1,$shippingAddress2,$shippingAddress3,$contactPhone,$shippingAddress5,$totalPrice,$orderId,$orderId,'1256','0','0','0','1',$contactName,'1','GB','GBP','0','0',$email,'1','0',$contactPhone,'0','0','0','0',$totalPrice,'1','0','0','1','0',$date,$totalPrice,'IP',$orderId.' '.$contactName.' PRE-PAID ','0',$date,'0','4','0','0','0','0','0','0','0','ORCHARDS','0','0','0','0','0','0','0','0',$ItemNumber,'0','1','0','','CN700','0','0',$taxCode,'0',$taxRate,'0');
-                    //    array_push($newFileData,$data); 
+                    if($totalPrice >= 99.99)
+                    {
+                        $data = array($acountRef,$shippingAddress1,$shippingAddress2,$shippingAddress3,$contactPhone,$shippingAddress5,$totalPrice,$orderId,$orderId,'1256','0','0','0','1',$contactName,'1','GB','GBP','0','0',$email,'1','0',$contactPhone,'0','0','0','0',$totalPrice,'1','0','0','1','0',$date,$totalPrice,'IP',$orderId.' '.$contactName.' PRE-PAID ','0',$date,'0','4','0','0','0','0','0','0','0','ORCHARDS','0','0','0','0','0','0','0','0',$ItemNumber,'0','1','0','','ORM803','0','0',$taxCode,'0',$taxRate,'0');
+                        array_push($newFileData,$data); 
 
-                    //    $ItemNumber = $ItemNumber + 1;
-                    //}
+                        $ItemNumber = $ItemNumber + 1;
+                    }
 
                     if($discountCode[0] == "VEGBUNDLE" && $orderId > $invNumber)
                     {
